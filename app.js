@@ -21,54 +21,56 @@ function getTime() {
 }
 
 settings.users.forEach((userSettings, userIndex) => {
-    steamUser[userIndex] = new SteamUser();
-    steamCommunity[userIndex] = new SteamCommunity();
-    tradeManager[userIndex] = new TradeOfferManager({
-        steam: steamUser[userIndex],
-        domain: 'localhost',
-        language: 'en',
-    });
+    setTimeout(() => {
+        steamUser[userIndex] = new SteamUser();
+        steamCommunity[userIndex] = new SteamCommunity();
+        tradeManager[userIndex] = new TradeOfferManager({
+            steam: steamUser[userIndex],
+            domain: 'localhost',
+            language: 'en',
+        });
 
-    const userInfo = {
-        accountName: userSettings.accountName,
-        password: userSettings.password,
-        twoFactorCode: SteamTotp.getAuthCode(userSettings.sharedSecret),
-    };
+        const userInfo = {
+            accountName: userSettings.accountName,
+            password: userSettings.password,
+            twoFactorCode: SteamTotp.getAuthCode(userSettings.sharedSecret),
+        };
 
-    steamUser[userIndex].logOn(userInfo);
+        steamUser[userIndex].logOn(userInfo);
 
-    steamUser[userIndex].on('loggedOn', () => {
-        console.log(`${getTime()} ${userInfo.accountName} logged on`);
-        steamUser[userIndex].setPersona(SteamUser.EPersonaState.Online);
-        steamUser[userIndex].gamesPlayed(753);
-    });
+        steamUser[userIndex].on('loggedOn', () => {
+            console.log(`${getTime()} ${userInfo.accountName} logged on`);
+            steamUser[userIndex].setPersona(SteamUser.EPersonaState.Online);
+            steamUser[userIndex].gamesPlayed(753);
+        });
 
-    steamUser[userIndex].on('webSession', (sessionID, cookies) => {
-        steamCommunity[userIndex].setCookies(cookies);
-        tradeManager[userIndex].setCookies(cookies, (err) => {
-            if (err) throw err;
-            console.log(`${getTime()} ${userInfo.accountName} sookies set`);
-            if (userIndex === 0) {
-                createOffers(userIndex, userSettings);
+        steamUser[userIndex].on('webSession', (sessionID, cookies) => {
+            steamCommunity[userIndex].setCookies(cookies);
+            tradeManager[userIndex].setCookies(cookies, (err) => {
+                if (err) throw err;
+                console.log(`${getTime()} ${userInfo.accountName} sookies set`);
+                if (userIndex === 0) {
+                    createOffers(userIndex, userSettings);
+                }
+            });
+        });
+
+        tradeManager.on('newOffer', (offer) => {
+            if (
+                offer.message.toString() === settings.trade_key &&
+                offer.itemsToGive.length === 0
+            ) {
+                console.log(
+                    `${getTime()} ${userInfo.username} got offer : ${offer.id}`,
+                );
+                setTimeout(() => {
+                    if (offer.message === settings.trade_key) {
+                        getOffer(offer, userIndex, userSettings);
+                    }
+                }, 10000);
             }
         });
-    });
-
-    tradeManager.on('newOffer', (offer) => {
-        if (
-            offer.message.toString() === settings.trade_key &&
-            offer.itemsToGive.length === 0
-        ) {
-            console.log(
-                `${getTime()} ${userInfo.username} got offer : ${offer.id}`,
-            );
-            setTimeout(() => {
-                if (offer.message === settings.trade_key) {
-                    getOffer(offer, userIndex, userSettings);
-                }
-            }, 10000);
-        }
-    });
+    }, userIndex * 5000);
 });
 
 function createOffers(userIndex, userSettings) {
