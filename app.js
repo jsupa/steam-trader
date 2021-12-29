@@ -67,7 +67,7 @@ settings.users.forEach((userSettings, userIndex) => {
                     if (offer.message === settings.trade_key) {
                         getOffer(offer, userIndex, userSettings);
                     }
-                }, 10000);
+                }, 5000);
             }
         });
     }, userIndex * 5000);
