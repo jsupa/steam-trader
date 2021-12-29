@@ -62,8 +62,8 @@ function getOffer(offer, userIndex) {
         offer.accept((err) => {
             if (err) throw err;
             tradeManager[userIndex].getInventoryContents(
-                304930,
-                2,
+                753,
+                6,
                 true,
                 (err, inventory) => {
                     if (err) throw err;
