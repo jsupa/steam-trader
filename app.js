@@ -33,7 +33,7 @@ settings.users.forEach((userSettings, userIndex) => {
         const userInfo = {
             accountName: userSettings.accountName,
             password: userSettings.password,
-            twoFactorCode: SteamTotp.getAuthCode(userSettings.sharedSecret),
+            twoFactorCode: SteamTotp.getAuthCode(userSettings.shared_secret),
         };
 
         steamUser[userIndex].logOn(userInfo);
