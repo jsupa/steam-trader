@@ -5,16 +5,21 @@
             "password": "XXX",
             "shared_secret": "XXX=",
             "identity_secret": "XXX",
-            "trade_url":"xxxx"
+            "trade_url":"xxxx",
+            "item_name":"SWAT"
         },
         {
             "username": "XXX",
             "password": "XXX",
             "shared_secret": "XXX=",
             "identity_secret": "XXXX",
-            "trade_url":"xxxx"
+            "trade_url":"xxxx",
+            "item_name":"FBI"
 
         }
     ],
+
+    "appid": "XXX",
+    "context_id": "XXX",
     "trade_key": "ondrik_je_sefko_offer"
 }
