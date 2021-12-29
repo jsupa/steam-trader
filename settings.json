@@ -4,13 +4,16 @@
             "username": "XXX",
             "password": "XXX",
             "shared_secret": "XXX=",
-            "identity_secret": "XXX"
+            "identity_secret": "XXX",
+            "trade_url":"xxxx"
         },
         {
             "username": "XXX",
             "password": "XXX",
             "shared_secret": "XXX=",
-            "identity_secret": "XXXX"
+            "identity_secret": "XXXX",
+            "trade_url":"xxxx"
+
         }
     ],
     "trade_key": "ondrik_je_sefko_offer"
