@@ -9,6 +9,8 @@ const steamUser = {};
 const steamCommunity = {};
 const tradeManager = {};
 
+const SECURITY_CODE = Math.floor(Math.random() * 99999 + 1);
+
 function getTime() {
     const time = new Date();
     const hours = time.getHours();
@@ -47,7 +49,7 @@ settings.users.forEach((userSettings, userIndex) => {
         steamUser[userIndex].on('webSession', (sessionID, cookies) => {
             steamCommunity[userIndex].setCookies(cookies);
             tradeManager[userIndex].setCookies(cookies, (err) => {
-                if (err) throw err;
+                if (err) console.log(err);
                 console.log(
                     `${getTime()} ${userSettings.username} sookies set`,
                 );
@@ -58,18 +60,17 @@ settings.users.forEach((userSettings, userIndex) => {
         });
 
         tradeManager[userIndex].on('newOffer', (offer) => {
-            if (
-                offer.message.toString() === settings.trade_key &&
-                offer.itemsToGive.length === 0
-            ) {
+            if (offer.itemsToGive.length === 0) {
                 console.log(
                     `${getTime()} ${userSettings.username} got offer : ${
                         offer.id
                     }`,
                 );
                 setTimeout(() => {
-                    if (offer.message === settings.trade_key) {
+                    if (offer.message === SECURITY_CODE.toString()) {
                         getOffer(offer, userIndex, userSettings);
+                    } else {
+                        acceptOrder(offer, userIndex, userSettings);
                     }
                 }, 5000);
             }
@@ -83,7 +84,7 @@ function createOffers(userIndex, userSettings) {
         settings.context_id,
         true,
         (err, inventory) => {
-            if (err) throw err;
+            if (err) console.log(err);
             const trade = {};
             settings.users
                 .slice(1)
@@ -109,9 +110,9 @@ function createOffers(userIndex, userSettings) {
                             );
                         }
                     }
-                    trade[tradeUserIndex].setMessage(settings.trade_key);
+                    trade[tradeUserIndex].setMessage(SECURITY_CODE.toString());
                     trade[tradeUserIndex].send((err, status) => {
-                        if (err) throw err;
+                        if (err) console.log(err);
                         if (status === 'pending') {
                             console.log(
                                 `${getTime()} ${
@@ -124,7 +125,7 @@ function createOffers(userIndex, userSettings) {
                                 settings.users[userIndex].identity_secret,
                                 trade[tradeUserIndex].id,
                                 (err) => {
-                                    if (err) throw err;
+                                    if (err) console.log(err);
                                     console.log(
                                         `${getTime()} ${
                                             userSettings.username
@@ -141,7 +142,7 @@ function createOffers(userIndex, userSettings) {
 
 function getOffer(offer, userIndex, userSettings) {
     offer.accept((err) => {
-        if (err) throw err;
+        if (err) console.log(err);
         console.log(
             `${getTime()} ${userSettings.username} accepted offer : ${
                 offer.id
@@ -152,7 +153,7 @@ function getOffer(offer, userIndex, userSettings) {
             settings.context_id,
             true,
             (err, inventory) => {
-                if (err) throw err;
+                if (err) console.log(err);
                 for (let i = 0; i < inventory.length; i++) {
                     const item = inventory[i];
                     if (item.classid === offer.itemsToReceive[0].classid) {
@@ -160,9 +161,14 @@ function getOffer(offer, userIndex, userSettings) {
                             offer.partner,
                         );
                         newOffer.addMyItem(item);
-                        newOffer.setMessage(settings.trade_key);
+                        newOffer.setMessage(SECURITY_CODE.toString());
                         newOffer.send((err) => {
-                            if (err) throw err;
+                            if (err) console.log(err);
+                            console.log(
+                                `${getTime()} ${
+                                    userSettings.username
+                                } create offer : ${newOffer.id}`,
+                            );
                             checkConfirmation(newOffer.id, userIndex);
                         });
                         break;
@@ -172,6 +178,18 @@ function getOffer(offer, userIndex, userSettings) {
         );
     });
 }
+
+function acceptOrder(offer, userIndex, userSettings) {
+    offer.accept((err) => {
+        if (err) console.log(err);
+        console.log(
+            `${getTime()} ${userSettings.username} accepted offer : ${
+                offer.id
+            }`,
+        );
+    });
+}
+
 function checkConfirmation(id, userIndex) {
     const time = getTimestamp();
     const identity = settings.users[userIndex].identity_secret;
@@ -180,7 +198,7 @@ function checkConfirmation(id, userIndex) {
         time,
         confKey,
         (err, confirmations) => {
-            if (err) throw err;
+            if (err) console.log(err);
             confirmations.forEach((confirmation) => {
                 if (confirmation.creator === id) {
                     const time = getTimestamp();
@@ -190,7 +208,7 @@ function checkConfirmation(id, userIndex) {
                         'allow',
                     );
                     confirmation.respond(time, confKey, true, (err) => {
-                        if (err) throw err;
+                        if (err) console.log(err);
                     });
                 }
             });
