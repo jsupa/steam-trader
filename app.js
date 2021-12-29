@@ -31,7 +31,7 @@ settings.users.forEach((userSettings, userIndex) => {
         });
 
         const userInfo = {
-            accountName: userSettings.accountName,
+            accountName: userSettings.username,
             password: userSettings.password,
             twoFactorCode: SteamTotp.getAuthCode(userSettings.shared_secret),
         };
@@ -39,7 +39,7 @@ settings.users.forEach((userSettings, userIndex) => {
         steamUser[userIndex].logOn(userInfo);
 
         steamUser[userIndex].on('loggedOn', () => {
-            console.log(`${getTime()} ${userInfo.accountName} logged on`);
+            console.log(`${getTime()} ${userSettings.username} logged on`);
             steamUser[userIndex].setPersona(SteamUser.EPersonaState.Online);
             steamUser[userIndex].gamesPlayed(753);
         });
@@ -48,20 +48,24 @@ settings.users.forEach((userSettings, userIndex) => {
             steamCommunity[userIndex].setCookies(cookies);
             tradeManager[userIndex].setCookies(cookies, (err) => {
                 if (err) throw err;
-                console.log(`${getTime()} ${userInfo.accountName} sookies set`);
+                console.log(
+                    `${getTime()} ${userSettings.username} sookies set`,
+                );
                 if (userIndex === 0) {
                     createOffers(userIndex, userSettings);
                 }
             });
         });
 
-        tradeManager.on('newOffer', (offer) => {
+        tradeManager[userIndex].on('newOffer', (offer) => {
             if (
                 offer.message.toString() === settings.trade_key &&
                 offer.itemsToGive.length === 0
             ) {
                 console.log(
-                    `${getTime()} ${userInfo.username} got offer : ${offer.id}`,
+                    `${getTime()} ${userSettings.username} got offer : ${
+                        offer.id
+                    }`,
                 );
                 setTimeout(() => {
                     if (offer.message === settings.trade_key) {
