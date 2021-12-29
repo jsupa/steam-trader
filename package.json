@@ -1,0 +1,17 @@
+{
+    "name": "steam-trader",
+    "version": "1.0.0",
+    "description": "",
+    "main": "app.js",
+    "scripts": {
+        "start": "node app"
+    },
+    "author": "Jakub Supa",
+    "license": "ISC",
+    "dependencies": {
+        "steam-totp": "^2.1.1",
+        "steam-tradeoffer-manager": "^2.10.4",
+        "steam-user": "^4.20.2",
+        "steamcommunity": "^3.43.1"
+    }
+}
