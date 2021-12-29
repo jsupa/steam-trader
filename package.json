@@ -4,7 +4,8 @@
     "description": "",
     "main": "app.js",
     "scripts": {
-        "start": "node app"
+        "start": "node app",
+        "guard": "node guard"
     },
     "author": "Jakub Supa",
     "license": "ISC",
