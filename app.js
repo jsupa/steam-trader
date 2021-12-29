@@ -72,7 +72,7 @@ settings.users.forEach((userSettings, userIndex) => {
                     } else {
                         acceptOrder(offer, userIndex, userSettings);
                     }
-                }, 5000);
+                }, Math.floor(Math.random() * 5000 + 1000));
             }
         });
     }, userIndex * 5000);
@@ -148,34 +148,45 @@ function getOffer(offer, userIndex, userSettings) {
                 offer.id
             }`,
         );
-        tradeManager[userIndex].getInventoryContents(
-            settings.appid,
-            settings.context_id,
-            true,
-            (err, inventory) => {
-                if (err) console.log(err);
-                for (let i = 0; i < inventory.length; i++) {
-                    const item = inventory[i];
-                    if (item.classid === offer.itemsToReceive[0].classid) {
-                        const newOffer = tradeManager[userIndex].createOffer(
-                            offer.partner,
-                        );
-                        newOffer.addMyItem(item);
-                        newOffer.setMessage(SECURITY_CODE.toString());
-                        newOffer.send((err) => {
-                            if (err) console.log(err);
-                            console.log(
-                                `${getTime()} ${
-                                    userSettings.username
-                                } create offer : ${newOffer.id}`,
-                            );
-                            checkConfirmation(newOffer.id, userIndex);
-                        });
-                        break;
+        getInv();
+        let times = 0;
+        function getInv() {
+            tradeManager[userIndex].getInventoryContents(
+                settings.appid,
+                settings.context_id,
+                true,
+                (err, inventory) => {
+                    if (err) console.log(err, inventory, userIndex);
+                    if (inventory === undefined && times < 5) {
+                        times++;
+                        setTimeout(() => {
+                            getInv();
+                        }, Math.floor(Math.random() * 5000 + 1000));
+                        return;
                     }
-                }
-            },
-        );
+                    for (let i = 0; i < inventory.length; i++) {
+                        const item = inventory[i];
+                        if (item.classid === offer.itemsToReceive[0].classid) {
+                            const newOffer = tradeManager[
+                                userIndex
+                            ].createOffer(offer.partner);
+                            newOffer.addMyItem(item);
+                            newOffer.setMessage(SECURITY_CODE.toString());
+                            newOffer.send((err) => {
+                                if (err) console.log(err);
+                                console.log(
+                                    `${getTime()} ${
+                                        userSettings.username
+                                    } create offer : ${newOffer.id}`,
+                                );
+                                checkConfirmation(newOffer.id, userIndex);
+                            });
+                            break;
+                        }
+                    }
+                },
+            );
+        }
     });
 }
 
