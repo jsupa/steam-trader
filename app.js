@@ -26,7 +26,7 @@ settings.users.forEach((userSettings, userIndex) => {
         steamCommunity[userIndex] = new SteamCommunity();
         tradeManager[userIndex] = new TradeOfferManager({
             steam: steamUser[userIndex],
-            domain: 'localhost',
+            domain: 'example.com',
             language: 'en',
         });
 
@@ -85,46 +85,56 @@ function createOffers(userIndex, userSettings) {
         (err, inventory) => {
             if (err) throw err;
             const trade = {};
-            settings.users.forEach((tradeUserSettings, tradeUserIndex) => {
-                trade[tradeUserIndex] = tradeManager[userIndex].createOffer(
-                    tradeUserSettings.trade_url,
-                );
-                inventory.forEach((item) => {
-                    const itemName = item.market_hash_name.toLoweCase();
-                    if (itemName.includes(tradeUserSettings.item_name)) {
-                        trade[tradeUserIndex].addMyItem(item);
-                    } else if (item === inventory.length - 1) {
-                        console.log(
-                            `${getTime()} ${
-                                userSettings.username
-                            } could not find a item.`,
-                        );
+            settings.users
+                .slice(1)
+                .forEach((tradeUserSettings, tradeUserIndex) => {
+                    trade[tradeUserIndex] = tradeManager[userIndex].createOffer(
+                        tradeUserSettings.trade_url,
+                    );
+                    // eslint-disable-next-line no-restricted-syntax
+                    for (const item of inventory) {
+                        const itemName = item.market_hash_name.toLowerCase();
+                        if (
+                            itemName.includes(
+                                tradeUserSettings.item_name.toLowerCase(),
+                            )
+                        ) {
+                            trade[tradeUserIndex].addMyItem(item);
+                            break;
+                        } else if (item === inventory.length - 1) {
+                            console.log(
+                                `${getTime()} ${
+                                    userSettings.username
+                                } could not find a item.`,
+                            );
+                        }
                     }
+                    trade[tradeUserIndex].setMessage(settings.trade_key);
+                    trade[tradeUserIndex].send((err, status) => {
+                        if (err) throw err;
+                        if (status === 'pending') {
+                            console.log(
+                                `${getTime()} ${
+                                    userSettings.username
+                                } offer created.`,
+                            );
+                            steamCommunity[
+                                userIndex
+                            ].acceptConfirmationForObject(
+                                settings.users[userIndex].identity_secret,
+                                trade[tradeUserIndex].id,
+                                (err) => {
+                                    if (err) throw err;
+                                    console.log(
+                                        `${getTime()} ${
+                                            userSettings.username
+                                        } accepted confirmation.`,
+                                    );
+                                },
+                            );
+                        }
+                    });
                 });
-                trade[tradeUserIndex].setMessage(settings.trade_key);
-                trade[tradeUserIndex].send((err, status) => {
-                    if (err) throw err;
-                    if (status === 'pending') {
-                        console.log(
-                            `${getTime()} ${
-                                userSettings.username
-                            } offer created.`,
-                        );
-                        steamCommunity[userIndex].acceptConfirmationForObject(
-                            settings.users[userIndex].identity_secret,
-                            trade[tradeUserIndex].id,
-                            (err) => {
-                                if (err) throw err;
-                                console.log(
-                                    `${getTime()} ${
-                                        userSettings.username
-                                    } accepted confirmation.`,
-                                );
-                            },
-                        );
-                    }
-                });
-            });
         },
     );
 }
@@ -139,7 +149,7 @@ function getOffer(offer, userIndex, userSettings) {
         );
         tradeManager[userIndex].getInventoryContents(
             settings.appid,
-            settings.contextid,
+            settings.context_id,
             true,
             (err, inventory) => {
                 if (err) throw err;
@@ -163,7 +173,7 @@ function getOffer(offer, userIndex, userSettings) {
     });
 }
 function checkConfirmation(id, userIndex) {
-    const time = getTime();
+    const time = getTimestamp();
     const identity = settings.users[userIndex].identity_secret;
     const confKey = SteamTotp.getConfirmationKey(identity, time, 'conf');
     steamCommunity[userIndex].getConfirmations(
@@ -173,7 +183,7 @@ function checkConfirmation(id, userIndex) {
             if (err) throw err;
             confirmations.forEach((confirmation) => {
                 if (confirmation.creator === id) {
-                    const time = getTime();
+                    const time = getTimestamp();
                     const confKey = SteamTotp.getConfirmationKey(
                         identity,
                         time,
@@ -186,4 +196,8 @@ function checkConfirmation(id, userIndex) {
             });
         },
     );
+}
+
+function getTimestamp() {
+    return Math.floor(Date.now() / 1000);
 }
