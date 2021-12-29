@@ -37,7 +37,9 @@ settings.users.forEach((userSettings, userIndex) => {
 
     tradeManager[userIndex].on("newOffer", (offer) => {
         if (offer.message == settings.trade_key) {
-            getOffer(offer, userIndex);
+            setTimeout(function () {
+                getOffer(offer, userIndex);
+            }, 10000);
         }
     });
 });
