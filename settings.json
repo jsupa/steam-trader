@@ -1,0 +1,17 @@
+{
+    "users": [
+        {
+            "username": "XXX",
+            "password": "XXX",
+            "shared_secret": "XXX=",
+            "identity_secret": "XXX"
+        },
+        {
+            "username": "XXX",
+            "password": "XXX",
+            "shared_secret": "XXX=",
+            "identity_secret": "XXXX"
+        }
+    ],
+    "trade_key": "ondrik_je_sefko_offer"
+}
