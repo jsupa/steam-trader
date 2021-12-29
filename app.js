@@ -28,22 +28,23 @@ settings.users.forEach((userSettings, userIndex) => {
         steamUser[userIndex].on('webSession', (sessionID, cookies) => {
             steamCommunity[userIndex].setCookies(cookies);
             tradeManager[userIndex].setCookies(cookies);
-            console.log('cookies set');
+            console.log(`${userSettings.username} cookies set`);
         });
 
         steamUser[userIndex].on('loggedOn', () => {
             steamUser[userIndex].setPersona(0);
-            console.log('logged on');
+            console.log(`${userSettings.username} logged on`);
         });
 
         tradeManager[userIndex].on('newOffer', (offer) => {
+            console.log(`${userSettings.username} got offer : ${offer.id}`);
             setTimeout(() => {
                 if (offer.message === settings.trade_key) {
                     getOffer(offer, userIndex);
                 }
             }, 10000);
         });
-    }, userIndex * 1000 + 10000);
+    }, userIndex * 5000);
 });
 
 function getOffer(offer, userIndex) {
